@@ -26,38 +26,38 @@ START_FILE = "bot_initialized.txt"
 # ============================================================
 
 COINS = {
-    "INJ": "Injective crypto",
-    "DOGE": "Dogecoin crypto",
-    "DOT": "Polkadot crypto",
-    "ATOM": "Cosmos ATOM crypto",
-    "CHR": "Chromia crypto",
-    "SCRT": "Secret Network crypto",
-    "OSMO": "Osmosis crypto",
-    "SAGA": "Saga crypto blockchain",
-    "DYM": "Dymension crypto",
-    "CAKE": "PancakeSwap crypto",
-    "SEI": "Sei Network crypto",
-    "AVAX": "Avalanche crypto",
-    "JUNO": "Juno crypto",
-    "MINA": "Mina Protocol crypto",
-    "NEAR": "NEAR Protocol crypto",
-    "AKT": "Akash Network crypto",
-    "OFC": "One Football Club crypto",
-    "PORTAL": "Portal crypto token",
-    "GMRX": "Gaimin GMRX crypto",
-    "NOT": "Notcoin crypto",
-    "DOGS": "DOGS crypto Telegram",
-    "TIA": "Celestia crypto",
-    "APT": "Aptos crypto",
-    "AEVO": "Aevo crypto",
-    "FIL": "Filecoin crypto",
-    "EIGEN": "EigenLayer crypto",
-    "GRT": "The Graph crypto",
-    "JUP": "Jupiter crypto",
-    "PYTH": "Pyth Network crypto",
-    "WINK": "WINkLink crypto",
-    "BTC": "Bitcoin BTC crypto",
-    "ETH": "Ethereum ETH crypto",
+    "INJ": "Injective",
+    "DOGE": "Dogecoin",
+    "DOT": "Polkadot",
+    "ATOM": "Cosmos",
+    "CHR": "Chromia",
+    "SCRT": "Secret Network",
+    "OSMO": "Osmosis",
+    "SAGA": "Saga",
+    "DYM": "Dymension",
+    "CAKE": "PancakeSwap",
+    "SEI": "Sei Network",
+    "AVAX": "Avalanche",
+    "JUNO": "Juno",
+    "MINA": "Mina Protocol",
+    "NEAR": "NEAR Protocol",
+    "AKT": "Akash Network",
+    "OFC": "OFC",
+    "PORTAL": "Portal",
+    "GMRX": "Gaimin",
+    "NOT": "Notcoin",
+    "DOGS": "DOGS",
+    "TIA": "Celestia",
+    "APT": "Aptos",
+    "AEVO": "Aevo",
+    "FIL": "Filecoin",
+    "EIGEN": "EigenLayer",
+    "GRT": "The Graph",
+    "JUP": "Jupiter",
+    "PYTH": "Pyth Network",
+    "WINK": "WINkLink",
+    "BTC": "Bitcoin",
+    "ETH": "Ethereum",
 }
 
 
@@ -83,7 +83,7 @@ REDDIT_SUBREDDITS = [
 
 
 # ============================================================
-# SOURCES / FILTERS
+# FILTERS
 # ============================================================
 
 BLOCKED_SOURCES = [
@@ -108,7 +108,6 @@ BLOCKED_WORDS = [
     "to eur",
     "usd to",
     "eur to",
-    "price prediction calculator",
 ]
 
 
@@ -170,6 +169,19 @@ NEWS_KEYWORDS = [
     "unlock",
     "breakout",
     "breakthrough",
+    "accumulate",
+    "accumulation",
+    "whale",
+    "whales",
+    "sell",
+    "selling",
+    "buy",
+    "buying",
+    "price",
+    "volume",
+    "flows",
+    "inflows",
+    "outflows",
 ]
 
 
@@ -232,6 +244,8 @@ NEGATIVE_WORDS = [
     "warning",
     "investigation",
     "investigated",
+    "sell",
+    "selling",
 ]
 
 
@@ -268,348 +282,51 @@ IMPORTANT_WORDS = {
     "unlock": 3,
     "breakout": 2,
     "breakthrough": 3,
+    "whale": 2,
+    "whales": 2,
+    "accumulate": 3,
+    "accumulation": 3,
 }
 
 
 # ============================================================
-# CRYPTO TERMINOLOGY
+# PROJECT NAMES
 # ============================================================
 
-CRYPTO_TERMS = {
-    "burn-and-mint equilibrium":
-        "تعادل سوزاندن و ایجاد توکن",
-
-    "burn and mint equilibrium":
-        "تعادل سوزاندن و ایجاد توکن",
-
-    "burning mechanism":
-        "سازوکار سوزاندن توکن",
-
-    "token burn":
-        "سوزاندن توکن",
-
-    "token burning":
-        "سوزاندن توکن",
-
-    "minting":
-        "ایجاد توکن",
-
-    "staking":
-        "استیکینگ",
-
-    "staked":
-        "استیک‌شده",
-
-    "validator":
-        "اعتبارسنج",
-
-    "validators":
-        "اعتبارسنج‌ها",
-
-    "mainnet":
-        "مین‌نت",
-
-    "testnet":
-        "تست‌نت",
-
-    "governance":
-        "حاکمیت شبکه",
-
-    "airdrop":
-        "ایردراپ",
-
-    "token unlock":
-        "آزادسازی توکن",
-
-    "token unlocks":
-        "آزادسازی توکن‌ها",
-
-    "unlock":
-        "آزادسازی توکن",
-
-    "liquidity":
-        "نقدینگی",
-
-    "liquidity pool":
-        "استخر نقدینگی",
-
-    "total value locked":
-        "ارزش کل دارایی‌های قفل‌شده",
-
-    "tokenomics":
-        "توکنومیک",
-
-    "market cap":
-        "ارزش بازار",
-
-    "market capitalization":
-        "ارزش بازار",
-
-    "on-chain":
-        "آن‌چین",
-
-    "onchain":
-        "آن‌چین",
-
-    "layer 1":
-        "لایه اول",
-
-    "layer-1":
-        "لایه اول",
-
-    "layer 2":
-        "لایه دوم",
-
-    "layer-2":
-        "لایه دوم",
-
-    "rollup":
-        "رول‌آپ",
-
-    "bridge":
-        "بریج",
-
-    "cross-chain":
-        "کراس‌چین",
-
-    "smart contract":
-        "قرارداد هوشمند",
-
-    "decentralized finance":
-        "امور مالی غیرمتمرکز",
-
-    "defi":
-        "دیفای",
-
-    "decentralized exchange":
-        "صرافی غیرمتمرکز",
-
-    "dex":
-        "صرافی غیرمتمرکز",
-
-    "centralized exchange":
-        "صرافی متمرکز",
-
-    "cex":
-        "صرافی متمرکز",
-
-    "whale":
-        "نهنگ",
-
-    "whales":
-        "نهنگ‌ها",
-
-    "institutional investors":
-        "سرمایه‌گذاران نهادی",
-
-    "institutional":
-        "نهادی",
-
-    "funding":
-        "تأمین مالی",
-
-    "venture capital":
-        "سرمایه‌گذاری خطرپذیر",
-
-    "network upgrade":
-        "ارتقای شبکه",
-
-    "partnership":
-        "همکاری",
-
-    "partnerships":
-        "همکاری‌ها",
-
-    "integration":
-        "ادغام",
-
-    "integrated":
-        "ادغام شد",
-
-    "listing":
-        "لیست شدن",
-
-    "listed":
-        "لیست شد",
-
-    "delisting":
-        "حذف از لیست",
-
-    "delisted":
-        "از لیست خارج شد",
-
-    "hack":
-        "هک",
-
-    "hacked":
-        "هک شد",
-
-    "exploit":
-        "اکسپلویت",
-
-    "exploited":
-        "مورد سوءاستفاده قرار گرفت",
-
-    "vulnerability":
-        "آسیب‌پذیری",
-
-    "security breach":
-        "نقض امنیتی",
-
-    "lawsuit":
-        "دادخواست حقوقی",
-
-    "regulatory":
-        "قانون‌گذاری",
-
-    "regulation":
-        "مقررات",
-
-    "adoption":
-        "پذیرش",
-
-    "roadmap":
-        "نقشه راه",
-
-    "proposal":
-        "پیشنهاد حاکمیتی",
-
-    "vote":
-        "رأی‌گیری",
-
-    "rally":
-        "رالی صعودی",
-
-    "surge":
-        "جهش",
-
-    "sell-off":
-        "فشار فروش",
-
-    "selloff":
-        "فشار فروش",
-
-    "bullish":
-        "صعودی",
-
-    "bearish":
-        "نزولی",
-
-    "breakout":
-        "شکست مقاومت",
-
-    "all-time high":
-        "بالاترین قیمت تاریخی",
-
-    "all time high":
-        "بالاترین قیمت تاریخی",
-
-    "all-time low":
-        "پایین‌ترین قیمت تاریخی",
-
-    "supply":
-        "عرضه",
-
-    "demand":
-        "تقاضا",
-
-    "circulating supply":
-        "عرضه در گردش",
-
-    "transaction":
-        "تراکنش",
-
-    "transactions":
-        "تراکنش‌ها",
-
-    "developers":
-        "توسعه‌دهندگان",
-
-    "developer":
-        "توسعه‌دهنده",
-
-    "ecosystem":
-        "اکوسیستم",
+PROJECT_NAMES = {
+    "INJ": "اینجکتیو",
+    "DOGE": "دوج‌کوین",
+    "DOT": "پولکادات",
+    "ATOM": "کازماس",
+    "CHR": "کرومیا",
+    "SCRT": "سیکرت نتورک",
+    "OSMO": "اُسموسیس",
+    "SAGA": "ساگا",
+    "DYM": "دایمنشن",
+    "CAKE": "پنکیک‌سواپ",
+    "SEI": "Sei",
+    "AVAX": "آوالانچ",
+    "JUNO": "جونو",
+    "MINA": "مینا",
+    "NEAR": "نیر",
+    "AKT": "آکاش",
+    "OFC": "OFC",
+    "PORTAL": "پورتال",
+    "GMRX": "گیمین",
+    "NOT": "نات‌کوین",
+    "DOGS": "DOGS",
+    "TIA": "سلسستیا",
+    "APT": "آپتوس",
+    "AEVO": "Aevo",
+    "FIL": "فایل‌کوین",
+    "EIGEN": "EigenLayer",
+    "GRT": "The Graph",
+    "JUP": "Jupiter",
+    "PYTH": "Pyth",
+    "WINK": "WINkLink",
+    "BTC": "بیت‌کوین",
+    "ETH": "اتریوم",
 }
-
-
-# ============================================================
-# TEXT HELPERS
-# ============================================================
-
-def normalize_text(text):
-    text = html.unescape(text or "")
-    text = text.lower()
-    text = re.sub(r"https?://\S+", "", text)
-    text = re.sub(
-        r"[^a-z0-9\u0600-\u06ff\s]",
-        " ",
-        text
-    )
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
-
-
-def make_id(text):
-    return hashlib.sha256(
-        text.encode("utf-8")
-    ).hexdigest()
-
-
-def similarity(a, b):
-    return SequenceMatcher(
-        None,
-        normalize_text(a),
-        normalize_text(b)
-    ).ratio()
-
-
-# ============================================================
-# STORAGE
-# ============================================================
-
-def load_seen():
-
-    if not os.path.exists(SEEN_FILE):
-        return set()
-
-    try:
-        with open(
-            SEEN_FILE,
-            "r",
-            encoding="utf-8"
-        ) as file:
-            return set(json.load(file))
-
-    except Exception as error:
-        print(
-            "Seen file error:",
-            error
-        )
-        return set()
-
-
-def save_seen(seen):
-
-    try:
-        data = list(seen)[-5000:]
-
-        with open(
-            SEEN_FILE,
-            "w",
-            encoding="utf-8"
-        ) as file:
-            json.dump(
-                data,
-                file,
-                ensure_ascii=False
-            )
-
-    except Exception as error:
-        print(
-            "Save seen error:",
-            error
-        )
 
 
 # ============================================================
@@ -625,7 +342,7 @@ def fetch_url(url, timeout=20):
             headers={
                 "User-Agent":
                     "Mozilla/5.0 "
-                    "(compatible; CryptoNewsBot/6.0)"
+                    "(compatible; CryptoNewsBot/7.0)"
             }
         )
 
@@ -648,7 +365,107 @@ def fetch_url(url, timeout=20):
 
 
 # ============================================================
-# QUALITY FILTER
+# STORAGE
+# ============================================================
+
+def load_seen():
+
+    if not os.path.exists(SEEN_FILE):
+        return set()
+
+    try:
+
+        with open(
+            SEEN_FILE,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
+            return set(
+                json.load(file)
+            )
+
+    except Exception as error:
+
+        print(
+            "Seen file error:",
+            error
+        )
+
+        return set()
+
+
+def save_seen(seen):
+
+    try:
+
+        data = list(seen)[-5000:]
+
+        with open(
+            SEEN_FILE,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            json.dump(
+                data,
+                file,
+                ensure_ascii=False
+            )
+
+    except Exception as error:
+
+        print(
+            "Save seen error:",
+            error
+        )
+
+
+def make_id(text):
+
+    return hashlib.sha256(
+        text.encode("utf-8")
+    ).hexdigest()
+
+
+# ============================================================
+# TEXT
+# ============================================================
+
+def normalize_text(text):
+
+    text = html.unescape(
+        text or ""
+    )
+
+    text = text.lower()
+
+    text = re.sub(
+        r"https?://\S+",
+        "",
+        text
+    )
+
+    text = re.sub(
+        r"\s+",
+        " ",
+        text
+    )
+
+    return text.strip()
+
+
+def similarity(a, b):
+
+    return SequenceMatcher(
+        None,
+        normalize_text(a),
+        normalize_text(b)
+    ).ratio()
+
+
+# ============================================================
+# ARTICLE FILTER
 # ============================================================
 
 def is_blocked_article(article):
@@ -678,7 +495,7 @@ def is_blocked_article(article):
     return False
 
 
-def is_quality_news(article):
+def is_news_article(article):
 
     if is_blocked_article(article):
         return False
@@ -689,8 +506,8 @@ def is_quality_news(article):
     ).lower()
 
     return any(
-        word in title
-        for word in NEWS_KEYWORDS
+        keyword in title
+        for keyword in NEWS_KEYWORDS
     )
 
 
@@ -700,7 +517,9 @@ def is_quality_news(article):
 
 def get_google_news(query):
 
-    encoded = urllib.parse.quote(query)
+    encoded = urllib.parse.quote(
+        query
+    )
 
     url = (
         "https://news.google.com/rss/search?"
@@ -716,13 +535,15 @@ def get_google_news(query):
 
     try:
 
-        root = ET.fromstring(data)
+        root = ET.fromstring(
+            data
+        )
 
         articles = []
 
         for item in root.findall(
             "./channel/item"
-        )[:20]:
+        )[:30]:
 
             title = item.findtext(
                 "title",
@@ -734,7 +555,7 @@ def get_google_news(query):
                 ""
             )
 
-            pub_date = item.findtext(
+            date = item.findtext(
                 "pubDate",
                 ""
             )
@@ -746,6 +567,7 @@ def get_google_news(query):
             source = ""
 
             if source_element is not None:
+
                 source = (
                     source_element.text
                     or ""
@@ -754,20 +576,25 @@ def get_google_news(query):
             article = {
                 "title": title.strip(),
                 "link": link.strip(),
-                "date": pub_date.strip(),
+                "date": date.strip(),
                 "source": source.strip(),
                 "type": "news",
             }
 
-            if is_quality_news(article):
-                articles.append(article)
+            if is_news_article(
+                article
+            ):
+
+                articles.append(
+                    article
+                )
 
         return articles
 
     except Exception as error:
 
         print(
-            "Google RSS error:",
+            "Google News error:",
             error
         )
 
@@ -793,7 +620,9 @@ def get_reddit(subreddit):
 
     try:
 
-        root = ET.fromstring(data)
+        root = ET.fromstring(
+            data
+        )
 
         namespace = {
             "atom":
@@ -848,7 +677,7 @@ def get_reddit(subreddit):
     except Exception as error:
 
         print(
-            "Reddit RSS error:",
+            "Reddit error:",
             error
         )
 
@@ -861,250 +690,571 @@ def get_reddit(subreddit):
 
 def article_matches_coin(
     symbol,
-    query,
+    project,
     article
 ):
 
-    title = article.get(
-        "title",
-        ""
-    ).lower()
-
-    source = article.get(
-        "source",
-        ""
-    ).lower()
-
-    text = title + " " + source
-
-    if is_blocked_article(article):
-        return False
-
-    if not any(
-        word in title
-        for word in NEWS_KEYWORDS
+    if is_blocked_article(
+        article
     ):
         return False
 
-    if symbol == "BTC":
-
-        return (
-            "bitcoin" in text
-            or bool(
-                re.search(
-                    r"\bbtc\b",
-                    text
-                )
-            )
+    title = normalize_text(
+        article.get(
+            "title",
+            ""
         )
+    )
 
-    if symbol == "ETH":
+    project_lower = project.lower()
+
+    if symbol in [
+        "BTC",
+        "ETH",
+    ]:
+
+        if symbol == "BTC":
+
+            return (
+                "bitcoin" in title
+                or re.search(
+                    r"\bbtc\b",
+                    title
+                ) is not None
+            )
 
         return (
-            "ethereum" in text
-            or bool(
-                re.search(
-                    r"\beth\b",
-                    text
-                )
-            )
+            "ethereum" in title
+            or re.search(
+                r"\beth\b",
+                title
+            ) is not None
         )
 
     if re.search(
         r"\b"
-        + re.escape(symbol.lower())
+        + re.escape(
+            symbol.lower()
+        )
         + r"\b",
-        text
+        title
     ):
+
         return True
 
-    query_words = query.lower().split()
+    project_words = project_lower.split()
 
-    for word in query_words:
+    for word in project_words:
 
-        if (
-            len(word) >= 4
-            and word not in [
-                "crypto",
-                "token",
-                "network",
-                "blockchain",
-            ]
-            and word in text
-        ):
-            return True
+        if len(word) >= 4:
+
+            if word in title:
+                return True
 
     return False
 
 
 # ============================================================
-# TRANSLATION
+# NEWS REWRITE ENGINE
 # ============================================================
 
-def protect_crypto_terms(text):
+def clean_title(title):
 
-    protected = {}
-    counter = 0
-
-    terms = sorted(
-        CRYPTO_TERMS.items(),
-        key=lambda item: len(item[0]),
-        reverse=True
+    title = html.unescape(
+        title or ""
     )
 
-    result = text
+    title = re.sub(
+        r"\s+",
+        " ",
+        title
+    )
 
-    for english, persian in terms:
+    title = title.strip()
 
-        pattern = (
-            r"(?<![A-Za-z])"
-            + re.escape(english)
-            + r"(?![A-Za-z])"
-        )
+    title = re.sub(
+        r"\s+[|•]\s+.*$",
+        "",
+        title
+    )
 
-        while True:
-
-            match = re.search(
-                pattern,
-                result,
-                flags=re.IGNORECASE
-            )
-
-            if not match:
-                break
-
-            key = (
-                "__CRYPTO_TERM_"
-                + str(counter)
-                + "__"
-            )
-
-            protected[key] = persian
-
-            result = (
-                result[:match.start()]
-                + key
-                + result[match.end():]
-            )
-
-            counter += 1
-
-    return result, protected
+    return title
 
 
-def restore_crypto_terms(
-    text,
-    protected
+def percent_value(text):
+
+    match = re.search(
+        r"(\d+(?:\.\d+)?)\s*%",
+        text
+    )
+
+    if match:
+
+        return match.group(1) + "%"
+
+    return None
+
+
+def extract_project_name(
+    symbol,
+    title
 ):
 
-    result = text
+    project = PROJECT_NAMES.get(
+        symbol,
+        symbol
+    )
 
-    for key, value in protected.items():
+    return (
+        project
+        + " ("
+        + symbol
+        + ")"
+    )
 
-        result = result.replace(
-            key,
-            value
+
+def rewrite_crypto_title(
+    symbol,
+    original
+):
+
+    title = clean_title(
+        original
+    )
+
+    lower = title.lower()
+
+    project = extract_project_name(
+        symbol,
+        title
+    )
+
+    percent = percent_value(
+        title
+    )
+
+    # --------------------------------------------------------
+    # TOKEN UNLOCK + WHALES + PRICE
+    # --------------------------------------------------------
+
+    if (
+        ("whale" in lower or "whales" in lower)
+        and (
+            "unlock" in lower
+            or "unlocked" in lower
+        )
+        and (
+            "accumulate" in lower
+            or "accumulation" in lower
+        )
+    ):
+
+        if (
+            "price lag" in lower
+            or "price lags" in lower
+            or "price remains weak" in lower
+        ):
+
+            return (
+                "نهنگ‌ها پس از آزادسازی توکن، "
+                "در حال انباشت "
+                + symbol
+                + " هستند؛ "
+                "قیمت همچنان تحت فشار است"
+            )
+
+        return (
+            "نهنگ‌ها پس از آزادسازی توکن، "
+            "در حال انباشت "
+            + symbol
+            + " هستند"
         )
 
-    return result
+    # --------------------------------------------------------
+    # WHALE ACCUMULATION
+    # --------------------------------------------------------
 
+    if (
+        ("whale" in lower or "whales" in lower)
+        and (
+            "accumulate" in lower
+            or "accumulation" in lower
+        )
+    ):
 
-def improve_persian_title(title):
+        return (
+            "نهنگ‌ها در حال انباشت "
+            + symbol
+            + " هستند"
+        )
 
-    result = title.strip()
+    # --------------------------------------------------------
+    # WHALE SELLING
+    # --------------------------------------------------------
+
+    if (
+        ("whale" in lower or "whales" in lower)
+        and (
+            "sell" in lower
+            or "selling" in lower
+            or "sold" in lower
+        )
+    ):
+
+        return (
+            "نهنگ‌ها در حال فروش "
+            + symbol
+            + " هستند"
+        )
+
+    # --------------------------------------------------------
+    # SURGE / RALLY
+    # --------------------------------------------------------
+
+    if (
+        "surge" in lower
+        or "surges" in lower
+    ):
+
+        if percent:
+
+            return (
+                project
+                + " با رشد "
+                + percent
+                + " جهش کرد"
+            )
+
+        return (
+            project
+            + " با جهش قیمت مواجه شد"
+        )
+
+    if (
+        "rally" in lower
+        or "rallies" in lower
+    ):
+
+        if percent:
+
+            return (
+                project
+                + " با رشد "
+                + percent
+                + " وارد یک رالی صعودی شد"
+            )
+
+        return (
+            project
+            + " وارد یک رالی صعودی شد"
+        )
+
+    # --------------------------------------------------------
+    # BREAKOUT
+    # --------------------------------------------------------
+
+    if (
+        "breakout" in lower
+        or "breaks resistance" in lower
+        or "breaks key resistance" in lower
+    ):
+
+        if percent:
+
+            return (
+                project
+                + " "
+                + percent
+                + " رشد کرد و مقاومت مهمی را شکست"
+            )
+
+        return (
+            project
+            + " مقاومت مهمی را شکست"
+        )
+
+    # --------------------------------------------------------
+    # PRICE DROP
+    # --------------------------------------------------------
+
+    if (
+        "drops" in lower
+        or "drop" in lower
+        or "falls" in lower
+        or "fall" in lower
+        or "declines" in lower
+        or "decline" in lower
+        or "plunges" in lower
+        or "plunge" in lower
+    ):
+
+        if percent:
+
+            return (
+                project
+                + " با افت "
+                + percent
+                + " مواجه شد"
+            )
+
+        return (
+            project
+            + " با کاهش قیمت مواجه شد"
+        )
+
+    # --------------------------------------------------------
+    # PRICE INCREASE
+    # --------------------------------------------------------
+
+    if (
+        "rises" in lower
+        or "rise" in lower
+        or "gains" in lower
+        or "gain" in lower
+        or "increases" in lower
+        or "increase" in lower
+    ):
+
+        if percent:
+
+            return (
+                project
+                + " "
+                + percent
+                + " رشد کرد"
+            )
+
+        return (
+            project
+            + " رشد کرد"
+        )
+
+    # --------------------------------------------------------
+    # TOKEN UNLOCK
+    # --------------------------------------------------------
+
+    if (
+        "token unlock" in lower
+        or "tokens unlocked" in lower
+        or "unlocking tokens" in lower
+    ):
+
+        return (
+            "آزادسازی توکن‌های "
+            + symbol
+            + " در راه است"
+        )
+
+    # --------------------------------------------------------
+    # PARTNERSHIP
+    # --------------------------------------------------------
+
+    if (
+        "partnership" in lower
+        or "partners with" in lower
+        or "partnership with" in lower
+    ):
+
+        return (
+            project
+            + " با یک همکاری جدید خبرساز شد"
+        )
+
+    # --------------------------------------------------------
+    # MAINNET
+    # --------------------------------------------------------
+
+    if "mainnet" in lower:
+
+        if "launch" in lower or "launched" in lower:
+
+            return (
+                "مین‌نت "
+                + project
+                + " راه‌اندازی شد"
+            )
+
+        if "upgrade" in lower:
+
+            return (
+                "ارتقای مهمی برای مین‌نت "
+                + project
+                + " منتشر شد"
+            )
+
+        return (
+            "تحولات جدیدی در مین‌نت "
+            + project
+            + " رخ داده است"
+        )
+
+    # --------------------------------------------------------
+    # UPGRADE
+    # --------------------------------------------------------
+
+    if (
+        "upgrade" in lower
+        or "upgraded" in lower
+    ):
+
+        return (
+            project
+            + " یک ارتقای مهم را دریافت کرد"
+        )
+
+    # --------------------------------------------------------
+    # HACK / EXPLOIT
+    # --------------------------------------------------------
+
+    if (
+        "hack" in lower
+        or "hacked" in lower
+        or "exploit" in lower
+        or "exploited" in lower
+    ):
+
+        return (
+            "هشدار امنیتی برای "
+            + project
+            + ": گزارش هک یا سوءاستفاده منتشر شد"
+        )
+
+    # --------------------------------------------------------
+    # LISTING
+    # --------------------------------------------------------
+
+    if (
+        "listed" in lower
+        or "listing" in lower
+    ):
+
+        return (
+            project
+            + " در یک صرافی یا بازار جدید لیست شد"
+        )
+
+    # --------------------------------------------------------
+    # ETF
+    # --------------------------------------------------------
+
+    if "etf" in lower:
+
+        return (
+            "تحولات جدید مربوط به ETF "
+            + project
+        )
+
+    # --------------------------------------------------------
+    # FUNDING
+    # --------------------------------------------------------
+
+    if (
+        "funding" in lower
+        or "investment" in lower
+    ):
+
+        return (
+            project
+            + " سرمایه‌گذاری یا تأمین مالی جدید جذب کرد"
+        )
+
+    # --------------------------------------------------------
+    # ADOPTION
+    # --------------------------------------------------------
+
+    if "adoption" in lower:
+
+        return (
+            "پذیرش "
+            + project
+            + " افزایش یافته است"
+        )
+
+    # --------------------------------------------------------
+    # STAKING
+    # --------------------------------------------------------
+
+    if "staking" in lower:
+
+        return (
+            "تحولات جدیدی در استیکینگ "
+            + project
+            + " گزارش شد"
+        )
+
+    # --------------------------------------------------------
+    # GOVERNANCE
+    # --------------------------------------------------------
+
+    if (
+        "governance" in lower
+        or "proposal" in lower
+        or "vote" in lower
+    ):
+
+        return (
+            "پیشنهاد یا رأی‌گیری جدید در اکوسیستم "
+            + project
+        )
+
+    # --------------------------------------------------------
+    # RECORD
+    # --------------------------------------------------------
+
+    if "record" in lower:
+
+        return (
+            project
+            + " به یک رکورد جدید رسید"
+        )
+
+    # --------------------------------------------------------
+    # GENERIC CLEANUP
+    # --------------------------------------------------------
 
     replacements = {
-
-        "افزایش می یابد":
-            "افزایش یافت",
-
-        "افزایش می‌دهد":
-            "افزایش یافت",
-
-        "افزایش می دهد":
-            "افزایش یافت",
-
-        "کاهش می یابد":
-            "کاهش یافت",
-
-        "کاهش می‌دهد":
-            "کاهش یافت",
-
-        "کاهش می دهد":
-            "کاهش یافت",
-
-        "در روایت های قوی":
-            "در بحبوحه تقویت روایت‌های صعودی",
-
-        "روایت های قوی":
-            "روایت‌های صعودی",
-
-        "روایت قوی":
-            "روایت صعودی",
-
-        "افزایش":
-            "رشد",
-
-        "سرمایه گذاران":
-            "سرمایه‌گذاران",
-
-        "توسعه دهندگان":
-            "توسعه‌دهندگان",
-
-        "ارز رمزنگاری شده":
-            "ارز دیجیتال",
-
-        "ارز رمزنگاری":
-            "ارز دیجیتال",
-
-        "بازار رمزنگاری":
-            "بازار کریپتو",
-
-        "بلاک چین":
-            "بلاک‌چین",
-
-        "بلاکچین":
-            "بلاک‌چین",
-
-        "نعناع":
-            "ایجاد توکن",
-
-        "سوختگی":
-            "سوزاندن",
-
-        "سوختن":
-            "سوزاندن",
-
-        "شبکه پولکادوت":
-            "پولکادات",
-
-        "شبکه اتریوم":
-            "اتریوم",
-
-        "شبکه بیت کوین":
-            "بیت‌کوین",
-
-        "بیت کوین":
-            "بیت‌کوین",
-
-        "قیمت ارز دیجیتال":
-            "قیمت ارز",
-
-        "توکن رمزنگاری":
-            "توکن کریپتویی",
+        "price": "قیمت",
+        "crypto": "کریپتو",
+        "token": "توکن",
+        "network": "شبکه",
+        "market": "بازار",
+        "volume": "حجم معاملات",
+        "users": "کاربران",
+        "user": "کاربر",
+        "developers": "توسعه‌دهندگان",
+        "developer": "توسعه‌دهنده",
+        "ecosystem": "اکوسیستم",
+        "launch": "راه‌اندازی",
+        "launched": "راه‌اندازی شد",
+        "update": "به‌روزرسانی",
+        "security": "امنیت",
     }
 
+    result = title
+
     for old, new in replacements.items():
-        result = result.replace(
-            old,
-            new
+
+        result = re.sub(
+            r"\b"
+            + re.escape(old)
+            + r"\b",
+            new,
+            result,
+            flags=re.IGNORECASE
         )
 
-    result = re.sub(
-        r"\s+([،,:؛.!؟])",
-        r"\1",
+    # اگر هنوز کاملاً انگلیسی بود،
+    # ترجمه ماشینی خراب را ارسال نمی‌کنیم.
+    if re.search(
+        r"[A-Za-z]{4,}",
         result
-    )
+    ):
+
+        return (
+            project
+            + "؛ "
+            + title
+        )
 
     result = re.sub(
         r"\s+",
@@ -1115,77 +1265,15 @@ def improve_persian_title(title):
     return result.strip()
 
 
-def translate_to_persian(text):
-
-    prepared, protected = (
-        protect_crypto_terms(text)
-    )
-
-    try:
-
-        encoded = urllib.parse.quote(
-            prepared
-        )
-
-        url = (
-            "https://translate.googleapis.com/"
-            "translate_a/single"
-            "?client=gtx"
-            "&sl=auto"
-            "&tl=fa"
-            "&dt=t"
-            "&q="
-            + encoded
-        )
-
-        data = fetch_url(
-            url,
-            timeout=15
-        )
-
-        if not data:
-
-            translated = prepared
-
-        else:
-
-            result = json.loads(
-                data.decode("utf-8")
-            )
-
-            translated = ""
-
-            for part in result[0]:
-
-                if part and part[0]:
-                    translated += part[0]
-
-    except Exception as error:
-
-        print(
-            "Translation error:",
-            error
-        )
-
-        translated = prepared
-
-    translated = restore_crypto_terms(
-        translated,
-        protected
-    )
-
-    return improve_persian_title(
-        translated
-    )
-
-
 # ============================================================
 # SENTIMENT
 # ============================================================
 
 def analyze_sentiment(title):
 
-    text = normalize_text(title)
+    text = normalize_text(
+        title
+    )
 
     positive = 0
     negative = 0
@@ -1233,22 +1321,16 @@ def importance_score(
             score += value
 
     if (
-        "surge" in text
-        or "rally" in text
-        or "breakout" in text
-    ):
-        score += 1
-
-    if (
         "hack" in text
         or "exploit" in text
         or "etf" in text
         or "approval" in text
-        or "lawsuit" in text
     ):
+
         score += 1
 
     if news_type == "reddit":
+
         score -= 1
 
     return max(
@@ -1272,12 +1354,12 @@ def importance_label(score):
 
 
 # ============================================================
-# DUPLICATES
+# DUPLICATE FILTER
 # ============================================================
 
 def is_duplicate(
     article,
-    recent_articles
+    previous
 ):
 
     title = article.get(
@@ -1290,24 +1372,27 @@ def is_duplicate(
         ""
     )
 
-    for old in recent_articles:
+    for old in previous:
 
-        if (
-            link
-            and link == old.get(
-                "link",
-                ""
-            )
-        ):
+        old_link = old.get(
+            "link",
+            ""
+        )
+
+        old_title = old.get(
+            "title",
+            ""
+        )
+
+        if link and link == old_link:
+
             return True
 
         if similarity(
             title,
-            old.get(
-                "title",
-                ""
-            )
+            old_title
         ) >= 0.88:
+
             return True
 
     return False
@@ -1329,8 +1414,10 @@ def send_telegram(message):
     data = urllib.parse.urlencode({
         "chat_id": CHAT_ID,
         "text": message,
-        "disable_web_page_preview": "false",
-    }).encode("utf-8")
+        "disable_web_page_preview": False,
+    }).encode(
+        "utf-8"
+    )
 
     request = urllib.request.Request(
         url,
@@ -1363,7 +1450,7 @@ def send_telegram(message):
 
 
 # ============================================================
-# TELEGRAM MESSAGE
+# MESSAGE
 # ============================================================
 
 def build_message(
@@ -1371,33 +1458,25 @@ def build_message(
     article
 ):
 
-    original_title = html.unescape(
+    original = clean_title(
         article.get(
             "title",
             ""
         )
-    ).strip()
+    )
 
-    persian_title = (
-        translate_to_persian(
-            original_title
-        )
+    persian = rewrite_crypto_title(
+        symbol,
+        original
     )
 
     source = article.get(
         "source",
-        ""
-    )
-
-    if not source:
-        source = "Unknown"
-
-    sentiment = analyze_sentiment(
-        original_title
+        "Unknown"
     )
 
     score = importance_score(
-        original_title,
+        original,
         source,
         article.get(
             "type",
@@ -1405,18 +1484,18 @@ def build_message(
         )
     )
 
-    level = importance_label(
-        score
+    sentiment = analyze_sentiment(
+        original
     )
 
     return (
         "📰 "
         + symbol
         + " | "
-        + level
+        + importance_label(score)
         + "\n\n"
         "🔹 "
-        + persian_title
+        + persian
         + "\n\n"
         "📊 اهمیت: "
         + str(score)
@@ -1425,7 +1504,7 @@ def build_message(
         + sentiment
         + "\n\n"
         "🇬🇧 Original:\n"
-        + original_title
+        + original
         + "\n\n"
         "🗞 منبع: "
         + source
@@ -1439,14 +1518,14 @@ def build_message(
 
 
 # ============================================================
-# COLLECT NEWS
+# COLLECT
 # ============================================================
 
 def collect_news():
 
     all_articles = []
 
-    for symbol, query in COINS.items():
+    for symbol, project in COINS.items():
 
         print(
             "Google News -> "
@@ -1454,21 +1533,26 @@ def collect_news():
         )
 
         articles = get_google_news(
-            query
+            project
+            + " crypto"
         )
 
         for article in articles:
 
             if article_matches_coin(
                 symbol,
-                query,
+                project,
                 article
             ):
 
-                article["symbol"] = symbol
+                item = dict(
+                    article
+                )
+
+                item["symbol"] = symbol
 
                 all_articles.append(
-                    article
+                    item
                 )
 
     for subreddit in REDDIT_SUBREDDITS:
@@ -1487,26 +1571,25 @@ def collect_news():
             if is_blocked_article(
                 article
             ):
+
                 continue
 
-            for symbol, query in COINS.items():
+            for symbol, project in COINS.items():
 
                 if article_matches_coin(
                     symbol,
-                    query,
+                    project,
                     article
                 ):
 
-                    new_article = dict(
+                    item = dict(
                         article
                     )
 
-                    new_article["symbol"] = (
-                        symbol
-                    )
+                    item["symbol"] = symbol
 
                     all_articles.append(
-                        new_article
+                        item
                     )
 
                     break
@@ -1520,8 +1603,6 @@ def collect_news():
 
 def initialize_bot():
 
-    seen = load_seen()
-
     print(
         "First run detected."
     )
@@ -1532,15 +1613,15 @@ def initialize_bot():
 
     articles = collect_news()
 
+    seen = load_seen()
+
     for article in articles:
 
-        symbol = article.get(
-            "symbol",
-            ""
-        )
-
-        unique_text = (
-            symbol
+        unique = (
+            article.get(
+                "symbol",
+                ""
+            )
             + "|"
             + article.get(
                 "title",
@@ -1554,7 +1635,7 @@ def initialize_bot():
         )
 
         seen.add(
-            make_id(unique_text)
+            make_id(unique)
         )
 
     save_seen(seen)
@@ -1593,6 +1674,7 @@ def main():
     ):
 
         initialize_bot()
+
         return
 
     print(
@@ -1622,10 +1704,12 @@ def main():
 
     print(
         "After duplicate filter: "
-        + str(len(unique_articles))
+        + str(
+            len(unique_articles)
+        )
     )
 
-    new_count = 0
+    sent = 0
 
     for article in unique_articles:
 
@@ -1634,7 +1718,7 @@ def main():
             "CRYPTO"
         )
 
-        unique_text = (
+        unique = (
             symbol
             + "|"
             + article.get(
@@ -1649,13 +1733,12 @@ def main():
         )
 
         news_id = make_id(
-            unique_text
+            unique
         )
 
         if news_id in seen:
-            continue
 
-        seen.add(news_id)
+            continue
 
         score = importance_score(
             article.get(
@@ -1672,11 +1755,15 @@ def main():
             )
         )
 
-        if score <= 2:
+        if score < 3:
 
             print(
                 "Skipped low importance: "
                 + symbol
+            )
+
+            seen.add(
+                news_id
             )
 
             continue
@@ -1692,6 +1779,12 @@ def main():
 
         if result:
 
+            seen.add(
+                news_id
+            )
+
+            sent += 1
+
             print(
                 "Sent: "
                 + symbol
@@ -1702,15 +1795,15 @@ def main():
                 )
             )
 
-            new_count += 1
-
         time.sleep(1)
 
-    save_seen(seen)
+    save_seen(
+        seen
+    )
 
     print(
         "Finished. Sent "
-        + str(new_count)
+        + str(sent)
         + " new articles."
     )
 
@@ -1720,4 +1813,5 @@ def main():
 # ============================================================
 
 if __name__ == "__main__":
+
     main()
