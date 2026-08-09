@@ -6,12 +6,10 @@ import html
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
-from datetime import datetime, timezone
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 
-# ارزهای مورد نظر
 COINS = {
     "INJ": "Injective crypto",
     "DOGE": "Dogecoin crypto",
@@ -42,11 +40,11 @@ COINS = {
     "GRT": "The Graph crypto",
     "JUP": "Jupiter crypto",
     "PYTH": "Pyth Network crypto",
-    "WINK": "WINkLink crypto WIN",
+    "WINK": "WINkLink crypto WIN"
 }
 
 SEEN_FILE = "seen_news.json"
-MAX_SEEN = 1000
+START_FILE = "bot_initialized.txt"
 
 
 def load_seen():
@@ -55,18 +53,14 @@ def load_seen():
 
     try:
         with open(SEEN_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return set(data)
+            return set(json.load(f))
     except Exception:
         return set()
 
 
 def save_seen(seen):
-    # فقط آخرین خبرها نگه داشته شوند
-    items = list(seen)[-MAX_SEEN:]
-
     with open(SEEN_FILE, "w", encoding="utf-8") as f:
-        json.dump(items, f, ensure_ascii=False, indent=2)
+        json.dump(list(seen)[-2000:], f, ensure_ascii=False)
 
 
 def make_id(text):
@@ -83,9 +77,7 @@ def get_rss(query):
 
     request = urllib.request.Request(
         url,
-        headers={
-            "User-Agent": "Mozilla/5.0 CryptoNewsBot/1.0"
-        }
+        headers={"User-Agent": "Mozilla/5.0"}
     )
 
     try:
@@ -116,8 +108,50 @@ def get_rss(query):
         return results
 
     except Exception as e:
-        print(f"RSS error for {query}: {e}")
+        print("RSS error:", e)
         return []
+
+
+def translate_to_persian(text):
+    """
+    ترجمه رایگان عنوان خبر به فارسی
+    """
+
+    try:
+        encoded = urllib.parse.quote(text)
+
+        url = (
+            "https://translate.googleapis.com/translate_a/single"
+            "?client=gtx"
+            "&sl=auto"
+            "&tl=fa"
+            "&dt=t"
+            f"&q={encoded}"
+        )
+
+        request = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+
+        with urllib.request.urlopen(request, timeout=15) as response:
+            data = response.read().decode("utf-8")
+
+        result = json.loads(data)
+
+        translated = ""
+
+        for part in result[0]:
+            if part[0]:
+                translated += part[0]
+
+        if translated:
+            return translated
+
+    except Exception as e:
+        print("Translation error:", e)
+
+    return text
 
 
 def send_telegram(message):
@@ -142,41 +176,80 @@ def send_telegram(message):
             return response.read().decode("utf-8")
 
     except Exception as e:
-        print(f"Telegram error: {e}")
+        print("Telegram error:", e)
         return None
 
 
-def clean_title(title):
-    # حذف HTML احتمالی
-    return html.unescape(title).strip()
-
-
 def build_message(symbol, article):
-    title = clean_title(article["title"])
+    original_title = html.unescape(article["title"]).strip()
+
+    # ترجمه عنوان
+    persian_title = translate_to_persian(original_title)
 
     source = article["source"] or "Google News"
 
     message = (
         f"📰 خبر جدید درباره {symbol}\n\n"
-        f"🔹 {title}\n\n"
-        f"🗞 منبع: {source}\n"
+        f"🔹 {persian_title}\n\n"
+        f"🗞 منبع: {source}\n\n"
+        f"🔗 {article['link']}"
     )
-
-    if article["date"]:
-        message += f"🕒 {article['date']}\n"
-
-    message += f"\n🔗 {article['link']}"
 
     return message
 
 
 def main():
+
     seen = load_seen()
 
-    new_count = 0
+    # -----------------------------
+    # اولین اجرای ربات
+    # -----------------------------
+    # خبرهای موجود را فقط ثبت می‌کنیم
+    # و برای جلوگیری از ارسال خبرهای قدیمی
+    # هیچ خبری ارسال نمی‌شود.
+    # -----------------------------
 
-    print("Crypto News Bot started")
-    print(f"Tracking {len(COINS)} coins")
+    first_run = not os.path.exists(START_FILE)
+
+    if first_run:
+
+        print("First run detected.")
+        print("Old news will be ignored.")
+
+        for symbol, query in COINS.items():
+
+            print(f"Initializing {symbol}...")
+
+            articles = get_rss(query)
+
+            for article in articles:
+
+                unique_text = (
+                    symbol
+                    + "|"
+                    + article["title"]
+                    + "|"
+                    + article["link"]
+                )
+
+                seen.add(make_id(unique_text))
+
+        save_seen(seen)
+
+        with open(START_FILE, "w", encoding="utf-8") as f:
+            f.write("initialized")
+
+        print("Initialization complete.")
+        print("No old news was sent.")
+
+        return
+
+    # -----------------------------
+    # اجراهای بعدی
+    # -----------------------------
+
+    new_count = 0
 
     for symbol, query in COINS.items():
 
@@ -184,10 +257,8 @@ def main():
 
         articles = get_rss(query)
 
-        # Google News معمولاً جدیدترین‌ها را اول می‌دهد
-        articles = articles[:5]
-
-        for article in reversed(articles):
+        # فقط چند خبر آخر بررسی شود
+        for article in reversed(articles[:5]):
 
             unique_text = (
                 symbol
@@ -202,8 +273,6 @@ def main():
             if news_id in seen:
                 continue
 
-            # خبر را قبل از ارسال ثبت می‌کنیم
-            # تا اگر ارسال تکراری شد، دوباره نفرستد
             seen.add(news_id)
 
             message = build_message(symbol, article)
@@ -211,17 +280,14 @@ def main():
             result = send_telegram(message)
 
             if result:
-                print(f"Sent: {symbol} - {article['title']}")
+                print(f"Sent new news: {symbol}")
                 new_count += 1
-            else:
-                print(f"Failed: {symbol}")
 
-            # کمی فاصله بین درخواست‌ها
             time.sleep(1)
 
     save_seen(seen)
 
-    print(f"Done. Sent {new_count} new articles.")
+    print(f"Finished. Sent {new_count} new articles.")
 
 
 if __name__ == "__main__":
