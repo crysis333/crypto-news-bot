@@ -1,12 +1,9 @@
 name: Crypto News Bot
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/15 * * * *"
 
 permissions:
   contents: write
@@ -19,26 +16,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.x"
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-
-      - name: Run crypto news bot
+      - name: Run Python bot
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: |
-          python bot.py
+        run: python bot.py
 
       - name: Save seen news
         run: |
-          git config user.name "crypto-news-bot"
-          git config user.email "actions@github.com"
-          git add seen_news.json
-          git diff --cached --quiet || git commit -m "Update seen news"
-          git push
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add seen_news.json bot_initialized.txt
+
+          if git diff --cached --quiet; then
+            echo "No changes to save."
+          else
+            git commit -m "Update seen crypto news"
+            git push
+          fi
