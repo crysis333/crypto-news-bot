@@ -6,6 +6,7 @@ import html
 import re
 import urllib.parse
 import urllib.request
+import urllib.error
 import xml.etree.ElementTree as ET
 
 
@@ -15,16 +16,13 @@ import xml.etree.ElementTree as ET
 
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
+GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
 SEEN_FILE = "seen_news.json"
 START_FILE = "bot_initialized.txt"
 
-# چند سرور رایگان LibreTranslate برای پشتیبان
-TRANSLATION_SERVERS = [
-    "https://de.libretranslate.com/translate",
-    "https://translate.mentality.rip/translate",
-    "https://translate.argosopentech.com/translate",
-]
+# مدل رایگان/کم‌هزینه Gemini
+GEMINI_MODEL = "gemini-2.5-flash"
 
 
 # ============================================================
@@ -67,6 +65,10 @@ COINS = {
 }
 
 
+# ============================================================
+# PERSIAN PROJECT NAMES
+# ============================================================
+
 PROJECT_NAMES = {
     "INJ": "اینجکتیو",
     "DOGE": "دوج‌کوین",
@@ -89,7 +91,7 @@ PROJECT_NAMES = {
     "GMRX": "گیمین",
     "NOT": "نات‌کوین",
     "DOGS": "DOGS",
-    "TIA": "سلسستیا",
+    "TIA": "سلستیا",
     "APT": "آپتوس",
     "AEVO": "Aevo",
     "FIL": "فایل‌کوین",
@@ -125,23 +127,26 @@ REDDIT_SUBREDDITS = [
 
 
 # ============================================================
-# FILTERS
+# BAD / LOW VALUE NEWS FILTER
 # ============================================================
 
-BLOCKED_WORDS = [
+BLOCKED_PHRASES = [
     "calculator",
     "converter",
     "convert",
     "conversion",
-    "exchange rate",
-    "price converter",
     "currency converter",
+    "price converter",
+    "exchange rate",
     "how much is",
     "to usd",
     "to eur",
     "usd to",
     "eur to",
+    "btc to usd",
+    "eth to usd",
 ]
+
 
 BLOCKED_SOURCES = [
     "bybit.com",
@@ -151,6 +156,10 @@ BLOCKED_SOURCES = [
     "kucoin.com",
 ]
 
+
+# ============================================================
+# IMPORTANT NEWS KEYWORDS
+# ============================================================
 
 NEWS_KEYWORDS = [
     "hack",
@@ -223,6 +232,10 @@ NEWS_KEYWORDS = [
     "flows",
     "inflows",
     "outflows",
+    "responds",
+    "response",
+    "critic",
+    "criticism",
 ]
 
 
@@ -237,7 +250,7 @@ def fetch_url(url, timeout=20):
             url,
             headers={
                 "User-Agent":
-                    "Mozilla/5.0 (compatible; CryptoNewsBot/8.0)"
+                    "Mozilla/5.0 (compatible; CryptoNewsBot/9.0)"
             },
         )
 
@@ -250,7 +263,11 @@ def fetch_url(url, timeout=20):
 
     except Exception as error:
 
-        print("Fetch error:", url, error)
+        print(
+            "Fetch error:",
+            url,
+            error
+        )
 
         return None
 
@@ -272,7 +289,9 @@ def load_seen():
             encoding="utf-8"
         ) as file:
 
-            return set(json.load(file))
+            return set(
+                json.load(file)
+            )
 
     except Exception:
 
@@ -297,7 +316,10 @@ def save_seen(seen):
 
     except Exception as error:
 
-        print("Save error:", error)
+        print(
+            "Save error:",
+            error
+        )
 
 
 def make_id(text):
@@ -308,7 +330,7 @@ def make_id(text):
 
 
 # ============================================================
-# TEXT CLEANING
+# TEXT
 # ============================================================
 
 def clean_text(text):
@@ -328,7 +350,9 @@ def clean_text(text):
 
 def normalize(text):
 
-    return clean_text(text).lower()
+    return clean_text(
+        text
+    ).lower()
 
 
 # ============================================================
@@ -338,18 +362,28 @@ def normalize(text):
 def blocked_article(article):
 
     title = normalize(
-        article.get("title", "")
+        article.get(
+            "title",
+            ""
+        )
     )
 
     source = normalize(
-        article.get("source", "")
+        article.get(
+            "source",
+            ""
+        )
     )
 
-    combined = title + " " + source
+    combined = (
+        title
+        + " "
+        + source
+    )
 
-    for word in BLOCKED_WORDS:
+    for phrase in BLOCKED_PHRASES:
 
-        if word in combined:
+        if phrase in combined:
             return True
 
     for source_name in BLOCKED_SOURCES:
@@ -362,7 +396,9 @@ def blocked_article(article):
 
 def valid_news(title):
 
-    text = normalize(title)
+    text = normalize(
+        title
+    )
 
     return any(
         keyword in text
@@ -383,14 +419,18 @@ def google_news(query):
         + "&hl=en-US&gl=US&ceid=US:en"
     )
 
-    data = fetch_url(url)
+    data = fetch_url(
+        url
+    )
 
     if not data:
         return []
 
     try:
 
-        root = ET.fromstring(data)
+        root = ET.fromstring(
+            data
+        )
 
         results = []
 
@@ -426,6 +466,7 @@ def google_news(query):
             source = ""
 
             if source_node is not None:
+
                 source = clean_text(
                     source_node.text or ""
                 )
@@ -438,14 +479,23 @@ def google_news(query):
                 "type": "news",
             }
 
-            if not blocked_article(article):
-                results.append(article)
+            if blocked_article(
+                article
+            ):
+                continue
+
+            results.append(
+                article
+            )
 
         return results
 
     except Exception as error:
 
-        print("Google News parse error:", error)
+        print(
+            "Google News parse error:",
+            error
+        )
 
         return []
 
@@ -454,7 +504,9 @@ def google_news(query):
 # REDDIT
 # ============================================================
 
-def reddit_news(subreddit):
+def reddit_news(
+    subreddit
+):
 
     url = (
         "https://www.reddit.com/r/"
@@ -462,14 +514,18 @@ def reddit_news(subreddit):
         + "/new/.rss"
     )
 
-    data = fetch_url(url)
+    data = fetch_url(
+        url
+    )
 
     if not data:
         return []
 
     try:
 
-        root = ET.fromstring(data)
+        root = ET.fromstring(
+            data
+        )
 
         namespace = {
             "atom":
@@ -527,7 +583,10 @@ def reddit_news(subreddit):
 
     except Exception as error:
 
-        print("Reddit parse error:", error)
+        print(
+            "Reddit parse error:",
+            error
+        )
 
         return []
 
@@ -542,191 +601,51 @@ def matches_coin(
     article
 ):
 
-    if blocked_article(article):
+    if blocked_article(
+        article
+    ):
         return False
 
     title = normalize(
-        article.get("title", "")
+        article.get(
+            "title",
+            ""
+        )
     )
 
-    if re.search(
+    symbol_match = re.search(
         r"\b"
-        + re.escape(symbol.lower())
+        + re.escape(
+            symbol.lower()
+        )
         + r"\b",
         title
-    ):
+    )
+
+    if symbol_match:
         return True
 
-    words = project.lower().split()
+    project_words = (
+        project.lower()
+        .split()
+    )
 
-    for word in words:
+    for word in project_words:
 
-        if len(word) >= 4 and word in title:
+        if (
+            len(word) >= 4
+            and word in title
+        ):
             return True
 
     return False
 
 
 # ============================================================
-# LIBRETRANSLATE
+# GEMINI TRANSLATION
 # ============================================================
 
-def libre_translate(text):
-
-    text = clean_text(text)
-
-    if not text:
-        return ""
-
-    for server in TRANSLATION_SERVERS:
-
-        try:
-
-            payload = json.dumps({
-                "q": text,
-                "source": "en",
-                "target": "fa",
-                "format": "text",
-            }).encode("utf-8")
-
-            request = urllib.request.Request(
-                server,
-                data=payload,
-                headers={
-                    "Content-Type":
-                        "application/json",
-                    "User-Agent":
-                        "CryptoNewsBot/8.0",
-                },
-                method="POST",
-            )
-
-            with urllib.request.urlopen(
-                request,
-                timeout=25
-            ) as response:
-
-                raw = response.read().decode(
-                    "utf-8"
-                )
-
-                data = json.loads(raw)
-
-                translated = data.get(
-                    "translatedText",
-                    ""
-                )
-
-                if translated:
-
-                    return clean_text(
-                        translated
-                    )
-
-        except Exception as error:
-
-            print(
-                "Translation server failed:",
-                server,
-                error
-            )
-
-        time.sleep(1)
-
-    return ""
-
-
-# ============================================================
-# CRYPTO GLOSSARY
-# ============================================================
-
-GLOSSARY = {
-
-    "استیبل کوین": "استیبل‌کوین",
-    "استیبل کوین‌ها": "استیبل‌کوین‌ها",
-
-    "توکن باز کردن قفل": "آزادسازی توکن",
-    "باز کردن قفل توکن": "آزادسازی توکن",
-
-    "نهنگ ها": "نهنگ‌ها",
-    "نهنگ": "نهنگ",
-
-    "انباشت": "انباشت",
-    "انباشت کردن": "انباشت",
-
-    "شکست": "شکست",
-    "شکست مقاومت": "شکست مقاومت",
-
-    "فروش": "فروش",
-    "فشار فروش": "فشار فروش",
-
-    "حجم": "حجم معاملات",
-
-    "شبکه اصلی": "مین‌نت",
-    "شبکه آزمایشی": "تست‌نت",
-
-    "ایردراپ": "ایردراپ",
-
-    "سهام": "استیکینگ",
-
-    "ارزش بازار": "ارزش بازار",
-
-    "ورودی": "ورود سرمایه",
-    "خروجی": "خروج سرمایه",
-
-    "صعودی": "صعودی",
-    "نزولی": "نزولی",
-}
-
-
-def apply_glossary(text):
-
-    result = clean_text(text)
-
-    for old, new in GLOSSARY.items():
-
-        result = result.replace(
-            old,
-            new
-        )
-
-    return result
-
-
-# ============================================================
-# FORCE PROJECT NAME
-# ============================================================
-
-def improve_project_name(
-    symbol,
-    translated
-):
-
-    project = PROJECT_NAMES.get(
-        symbol,
-        symbol
-    )
-
-    # اگر مترجم نام پروژه را خراب کرد،
-    # نام صحیح پروژه را وارد می‌کنیم.
-
-    translated = re.sub(
-        r"\b"
-        + re.escape(symbol)
-        + r"\b",
-        symbol,
-        translated,
-        flags=re.IGNORECASE
-    )
-
-    return translated
-
-
-# ============================================================
-# SMART TRANSLATION
-# ============================================================
-
-def translate_title(
+def gemini_translate(
     symbol,
     original
 ):
@@ -735,201 +654,263 @@ def translate_title(
         original
     )
 
-    translated = libre_translate(
-        original
+    if not original:
+        return None
+
+    prompt = f"""
+تو یک ویراستار حرفه‌ای اخبار ارز دیجیتال هستی.
+
+عنوان انگلیسی زیر را به فارسی طبیعی، روان و خبری ترجمه کن.
+
+قوانین بسیار مهم:
+
+1. معنی کامل عنوان را منتقل کن.
+2. ترجمه تحت‌اللفظی و ماشینی نباشد.
+3. عنوان باید مثل تیتر یک رسانه فارسی حوزه کریپتو نوشته شود.
+4. نام پروژه‌ها و ارزها را درست نگه دار.
+5. نماد ارز {symbol} را همیشه به صورت {symbol} بنویس.
+6. اصطلاحات کریپتو را درست ترجمه کن:
+   whale = نهنگ
+   whales = نهنگ‌ها
+   accumulate = انباشت کردن
+   accumulation = انباشت
+   token unlock = آزادسازی توکن
+   stablecoin = استیبل‌کوین
+   breakout = شکست مقاومت
+   sell-off = موج فروش
+   inflows = ورود سرمایه
+   outflows = خروج سرمایه
+   rally = رشد / رالی
+   surge = جهش
+   plunge = سقوط شدید
+   outlook = چشم‌انداز
+   criticism = انتقاد
+   responds to criticism = به انتقادها واکنش نشان داد
+7. اگر عنوان درباره قیمت است، قیمت را درست منتقل کن.
+8. درصدها و اعداد را حذف نکن.
+9. نام رسانه را داخل تیتر نیاور، مگر اینکه برای معنی ضروری باشد.
+10. هیچ توضیح اضافه‌ای نده.
+11. فقط یک تیتر فارسی خروجی بده.
+12. اگر جمله انگلیسی از نظر خبری ضعیف است، آن را به یک تیتر فارسی طبیعی تبدیل کن، اما معنی را تغییر نده.
+
+نمونه:
+
+English:
+Wall Street Giant Responds to Criticism About Dogecoin (DOGE)
+
+Correct Persian:
+غول وال‌استریت به انتقادها درباره دوج‌کوین (DOGE) واکنش نشان داد
+
+English:
+EigenLayer whales accumulate EIGEN tokens post-transfer unlock despite price lag
+
+Correct Persian:
+نهنگ‌های EigenLayer پس از آزادسازی توکن‌های EIGEN، با وجود ضعف قیمت، به انباشت ادامه دادند
+
+English:
+Stablecoin Boom Fuels Recovery Hopes for Near Protocol
+
+Correct Persian:
+رونق استیبل‌کوین‌ها امید به بهبود وضعیت NEAR Protocol را افزایش داده است
+
+عنوانی که باید ترجمه شود:
+
+{original}
+"""
+
+    url = (
+        "https://generativelanguage.googleapis.com/"
+        "v1beta/models/"
+        + GEMINI_MODEL
+        + ":generateContent?key="
+        + urllib.parse.quote(
+            GEMINI_API_KEY
+        )
     )
+
+    payload = {
+        "contents": [
+            {
+                "parts": [
+                    {
+                        "text": prompt
+                    }
+                ]
+            }
+        ],
+        "generationConfig": {
+            "temperature": 0.2,
+            "maxOutputTokens": 200,
+        }
+    }
+
+    try:
+
+        body = json.dumps(
+            payload
+        ).encode(
+            "utf-8"
+        )
+
+        request = urllib.request.Request(
+            url,
+            data=body,
+            headers={
+                "Content-Type":
+                    "application/json"
+            },
+            method="POST"
+        )
+
+        with urllib.request.urlopen(
+            request,
+            timeout=30
+        ) as response:
+
+            raw = response.read().decode(
+                "utf-8"
+            )
+
+        data = json.loads(
+            raw
+        )
+
+        candidates = data.get(
+            "candidates",
+            []
+        )
+
+        if not candidates:
+            print(
+                "Gemini returned no candidates."
+            )
+            return None
+
+        parts = (
+            candidates[0]
+            .get("content", {})
+            .get("parts", [])
+        )
+
+        if not parts:
+            return None
+
+        translated = parts[0].get(
+            "text",
+            ""
+        )
+
+        translated = clean_text(
+            translated
+        )
+
+        # حذف احتمالی markdown
+        translated = re.sub(
+            r"^#+\s*",
+            "",
+            translated
+        )
+
+        translated = translated.strip(
+            "\"'«»"
+        )
+
+        if not translated:
+            return None
+
+        return translated
+
+    except urllib.error.HTTPError as error:
+
+        try:
+            detail = error.read().decode(
+                "utf-8"
+            )
+        except Exception:
+            detail = ""
+
+        print(
+            "Gemini HTTP error:",
+            error.code,
+            detail[:500]
+        )
+
+        return None
+
+    except Exception as error:
+
+        print(
+            "Gemini translation error:",
+            error
+        )
+
+        return None
+
+
+# ============================================================
+# TRANSLATION QUALITY CHECK
+# ============================================================
+
+def translation_is_good(
+    original,
+    translated,
+    symbol
+):
 
     if not translated:
+        return False
 
-        return ""
-
-    translated = apply_glossary(
+    # ترجمه نباید تقریباً همان متن انگلیسی باشد
+    if normalize(
+        original
+    ) == normalize(
         translated
-    )
+    ):
+        return False
 
-    translated = improve_project_name(
-        symbol,
-        translated
-    )
+    # حداقل طول منطقی
+    if len(translated) < 15:
+        return False
 
-    # حذف ترجمه‌های خراب که هنوز بخش بزرگی
-    # از متن انگلیسی هستند.
-
+    # اگر هنوز مقدار زیادی انگلیسی باقی مانده باشد
     english_words = re.findall(
         r"\b[A-Za-z]{4,}\b",
         translated
     )
 
-    total_words = max(
-        1,
-        len(translated.split())
+    words = translated.split()
+
+    if len(words) >= 5:
+
+        ratio = (
+            len(english_words)
+            / len(words)
+        )
+
+        if ratio > 0.55:
+            return False
+
+    # متن‌های خراب معمولاً این‌ها را دارند
+    bad_patterns = [
+        "خبر جدید درباره",
+        "ترجمه",
+        "translation",
+        "unable",
+        "cannot",
+        "i cannot",
+        "i'm sorry",
+    ]
+
+    lower = normalize(
+        translated
     )
 
-    english_ratio = (
-        len(english_words)
-        / total_words
-    )
+    for pattern in bad_patterns:
 
-    if english_ratio > 0.45:
+        if pattern in lower:
+            return False
 
-        print(
-            "Translation rejected:",
-            translated
-        )
-
-        return ""
-
-    return translated
-
-
-# ============================================================
-# FALLBACK TITLES
-# ============================================================
-
-def fallback_title(
-    symbol,
-    original
-):
-
-    text = normalize(
-        original
-    )
-
-    project = PROJECT_NAMES.get(
-        symbol,
-        symbol
-    )
-
-    percent_match = re.search(
-        r"(\d+(?:\.\d+)?)\s*%",
-        original
-    )
-
-    percent = ""
-
-    if percent_match:
-
-        percent = (
-            percent_match.group(1)
-            + "%"
-        )
-
-    if (
-        "whale" in text
-        and "accumulate" in text
-    ):
-
-        return (
-            "نهنگ‌ها در حال انباشت "
-            + symbol
-            + " هستند"
-        )
-
-    if (
-        "whale" in text
-        and (
-            "sell" in text
-            or "selling" in text
-        )
-    ):
-
-        return (
-            "نهنگ‌ها در حال فروش "
-            + symbol
-            + " هستند"
-        )
-
-    if (
-        "unlock" in text
-        and "token" in text
-    ):
-
-        return (
-            "آزادسازی توکن‌های "
-            + symbol
-            + " در کانون توجه بازار قرار گرفت"
-        )
-
-    if (
-        "surge" in text
-        or "rally" in text
-    ):
-
-        if percent:
-
-            return (
-                project
-                + " با رشد "
-                + percent
-                + " جهش کرد"
-            )
-
-        return (
-            project
-            + " با جهش قیمت مواجه شد"
-        )
-
-    if (
-        "drop" in text
-        or "decline" in text
-        or "fall" in text
-        or "plunge" in text
-    ):
-
-        if percent:
-
-            return (
-                project
-                + " "
-                + percent
-                + " افت کرد"
-            )
-
-        return (
-            project
-            + " با کاهش قیمت مواجه شد"
-        )
-
-    if "partnership" in text:
-
-        return (
-            project
-            + " از یک همکاری جدید خبر داد"
-        )
-
-    if "hack" in text or "exploit" in text:
-
-        return (
-            "هشدار امنیتی درباره "
-            + project
-        )
-
-    if "listing" in text or "listed" in text:
-
-        return (
-            project
-            + " در یک صرافی یا بازار جدید لیست شد"
-        )
-
-    if "upgrade" in text:
-
-        return (
-            "ارتقای جدید "
-            + project
-            + " منتشر شد"
-        )
-
-    if "mainnet" in text:
-
-        return (
-            "تحولات جدیدی در مین‌نت "
-            + project
-        )
-
-    return (
-        "خبر جدید درباره "
-        + project
-    )
+    return True
 
 
 # ============================================================
@@ -956,6 +937,8 @@ POSITIVE = [
     "upgrade",
     "funding",
     "investment",
+    "accumulate",
+    "accumulation",
 ]
 
 
@@ -979,12 +962,17 @@ NEGATIVE = [
     "banned",
     "delist",
     "delisted",
+    "security",
 ]
 
 
-def sentiment(title):
+def sentiment(
+    title
+):
 
-    text = normalize(title)
+    text = normalize(
+        title
+    )
 
     positive = sum(
         1
@@ -1015,7 +1003,7 @@ IMPORTANT = {
     "hack": 7,
     "hacked": 7,
     "exploit": 7,
-    "exploit": 7,
+    "attack": 7,
     "etf": 5,
     "approval": 5,
     "approved": 5,
@@ -1037,12 +1025,19 @@ IMPORTANT = {
     "accumulate": 3,
     "accumulation": 3,
     "breakout": 3,
+    "record": 3,
+    "surge": 2,
+    "rally": 2,
 }
 
 
-def importance(title):
+def importance(
+    title
+):
 
-    text = normalize(title)
+    text = normalize(
+        title
+    )
 
     score = 3
 
@@ -1057,7 +1052,9 @@ def importance(title):
     )
 
 
-def importance_label(score):
+def importance_label(
+    score
+):
 
     if score >= 9:
         return "🚨 بسیار مهم"
@@ -1075,7 +1072,9 @@ def importance_label(score):
 # TELEGRAM
 # ============================================================
 
-def send_telegram(message):
+def send_telegram(
+    message
+):
 
     url = (
         "https://api.telegram.org/bot"
@@ -1127,7 +1126,8 @@ def send_telegram(message):
 
 def build_message(
     symbol,
-    article
+    article,
+    translated
 ):
 
     original = clean_text(
@@ -1136,18 +1136,6 @@ def build_message(
             ""
         )
     )
-
-    translated = translate_title(
-        symbol,
-        original
-    )
-
-    if not translated:
-
-        translated = fallback_title(
-            symbol,
-            original
-        )
 
     score = importance(
         original
@@ -1166,20 +1154,22 @@ def build_message(
         "📰 "
         + symbol
         + " | "
-        + importance_label(score)
-        + "\n"
+        + importance_label(
+            score
+        )
+        + "\n\n"
         "🔹 "
         + translated
-        + "\n"
+        + "\n\n"
         "📊 اهمیت: "
         + str(score)
         + "/10\n"
         "📈 تأثیر احتمالی: "
         + impact
-        + "\n"
+        + "\n\n"
         "🇬🇧 Original: "
         + original
-        + "\n"
+        + "\n\n"
         "🗞 منبع: "
         + source
         + "\n"
@@ -1218,6 +1208,16 @@ def collect():
                 project,
                 article
             ):
+
+                # فقط خبرهای واقعی
+                # نه تبدیل قیمت و ماشین حساب
+                if not valid_news(
+                    article.get(
+                        "title",
+                        ""
+                    )
+                ):
+                    continue
 
                 article["symbol"] = symbol
 
@@ -1295,10 +1295,14 @@ def first_run():
         )
 
         seen.add(
-            make_id(key)
+            make_id(
+                key
+            )
         )
 
-    save_seen(seen)
+    save_seen(
+        seen
+    )
 
     with open(
         START_FILE,
@@ -1378,7 +1382,9 @@ def main():
             + link
         )
 
-        news_id = make_id(key)
+        news_id = make_id(
+            key
+        )
 
         if news_id in seen:
             continue
@@ -1390,9 +1396,38 @@ def main():
             news_id
         )
 
+        print(
+            "Translating -> "
+            + symbol
+            + " -> "
+            + title
+        )
+
+        translated = gemini_translate(
+            symbol,
+            title
+        )
+
+        if not translation_is_good(
+            title,
+            translated,
+            symbol
+        ):
+
+            print(
+                "Translation rejected -> "
+                + symbol
+            )
+
+            # خبر را seen نمی‌کنیم
+            # تا در اجرای بعدی دوباره
+            # امکان ترجمه داشته باشد.
+            continue
+
         message = build_message(
             symbol,
-            article
+            article,
+            translated
         )
 
         result = send_telegram(
@@ -1412,9 +1447,13 @@ def main():
                 + symbol
             )
 
-        time.sleep(2)
+        time.sleep(
+            2
+        )
 
-    save_seen(seen)
+    save_seen(
+        seen
+    )
 
     print(
         "Finished."
