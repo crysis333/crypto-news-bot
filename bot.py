@@ -9,20 +9,11 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from difflib import SequenceMatcher
 
-
-# ============================================================
-# CONFIG
-# ============================================================
-
 BOT_TOKEN = os.environ["BOT_TOKEN"]
 CHAT_ID = os.environ["CHAT_ID"]
 
 SEEN_FILE = "seen_news.json"
 START_FILE = "bot_initialized.txt"
-
-# ============================================================
-# COINS
-# ============================================================
 
 COINS = {
     "INJ": "Injective crypto",
@@ -59,11 +50,6 @@ COINS = {
     "ETH": "Ethereum ETH crypto",
 }
 
-
-# ============================================================
-# REDDIT SOURCES
-# ============================================================
-
 REDDIT_SUBREDDITS = [
     "CryptoCurrency",
     "CryptoMarkets",
@@ -80,26 +66,101 @@ REDDIT_SUBREDDITS = [
     "Filecoin",
 ]
 
+BLOCKED_SOURCES = [
+    "bybit.com",
+    "binance.com",
+    "coinmarketcap.com",
+    "coingecko.com",
+    "kraken.com",
+    "okx.com",
+    "kucoin.com",
+]
 
-# ============================================================
-# GENERAL HELPERS
-# ============================================================
+BLOCKED_WORDS = [
+    "calculator",
+    "converter",
+    "convert",
+    "conversion",
+    "to usd",
+    "to eur",
+    "exchange rate",
+    "price converter",
+    "currency converter",
+    "how much is",
+    "price today",
+    "price now",
+]
+
+NEWS_KEYWORDS = [
+    "hack", "hacked", "exploit", "exploited", "attack",
+    "security", "vulnerability",
+    "partnership", "partner", "integration", "collaboration",
+    "launch", "launched", "mainnet", "testnet", "upgrade",
+    "update", "release", "listing", "listed", "delisting",
+    "delisted", "etf", "regulation", "regulatory", "sec",
+    "lawsuit", "legal", "ban", "banned", "funding", "investment",
+    "investor", "acquisition", "staking", "validator", "governance",
+    "airdrop", "adoption", "institutional", "developer",
+    "developers", "development", "proposal", "vote", "voting",
+    "milestone", "record", "surge", "rally", "collapse", "crash",
+]
+
+POSITIVE_WORDS = [
+    "approve", "approved", "approval", "bullish", "surge", "rally",
+    "partnership", "launch", "launched", "upgrade", "growth",
+    "adoption", "record", "increase", "gain", "gains", "positive",
+    "breakout", "integrated", "integration", "listing", "support",
+    "success", "milestone", "funding", "investment", "expands",
+    "expansion",
+]
+
+NEGATIVE_WORDS = [
+    "hack", "hacked", "exploit", "exploited", "scam", "fraud",
+    "lawsuit", "ban", "banned", "collapse", "crash", "drop",
+    "drops", "decline", "declines", "loss", "losses", "negative",
+    "attack", "stolen", "delist", "delisted", "warning",
+    "investigation", "investigated",
+]
+
+IMPORTANT_WORDS = {
+    "hack": 5,
+    "hacked": 5,
+    "exploit": 5,
+    "exploited": 5,
+    "approval": 4,
+    "approved": 4,
+    "lawsuit": 4,
+    "ban": 5,
+    "banned": 5,
+    "listing": 3,
+    "delisting": 5,
+    "delisted": 5,
+    "partnership": 3,
+    "upgrade": 3,
+    "launch": 3,
+    "mainnet": 4,
+    "etf": 5,
+    "funding": 3,
+    "investment": 3,
+    "acquisition": 4,
+    "security": 4,
+    "attack": 5,
+    "stolen": 5,
+    "shutdown": 5,
+    "collapse": 5,
+    "record": 3,
+}
+
 
 def make_id(text):
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
 def normalize_text(text):
-    """
-    برای تشخیص اخبار تکراری.
-    """
-    text = html.unescape(text or "")
-    text = text.lower()
-
+    text = html.unescape(text or "").lower()
     text = re.sub(r"https?://\S+", "", text)
     text = re.sub(r"[^a-z0-9\u0600-\u06ff\s]", " ", text)
     text = re.sub(r"\s+", " ", text)
-
     return text.strip()
 
 
@@ -111,10 +172,6 @@ def similarity(a, b):
     ).ratio()
 
 
-# ============================================================
-# SEEN NEWS
-# ============================================================
-
 def load_seen():
     if not os.path.exists(SEEN_FILE):
         return set()
@@ -122,7 +179,6 @@ def load_seen():
     try:
         with open(SEEN_FILE, "r", encoding="utf-8") as f:
             return set(json.load(f))
-
     except Exception as e:
         print("Seen file error:", e)
         return set()
@@ -130,7 +186,6 @@ def load_seen():
 
 def save_seen(seen):
     try:
-        # فقط 5000 مورد آخر
         data = list(seen)[-5000:]
 
         with open(SEEN_FILE, "w", encoding="utf-8") as f:
@@ -144,25 +199,20 @@ def save_seen(seen):
         print("Save seen error:", e)
 
 
-# ============================================================
-# HTTP
-# ============================================================
-
 def fetch_url(url, timeout=20):
     try:
         request = urllib.request.Request(
             url,
             headers={
                 "User-Agent":
-                    "Mozilla/5.0 (compatible; CryptoNewsBot/2.0)"
-            }
+                    "Mozilla/5.0 (compatible; CryptoNewsBot/3.0)"
+            },
         )
 
         with urllib.request.urlopen(
             request,
             timeout=timeout
         ) as response:
-
             return response.read()
 
     except Exception as e:
@@ -170,9 +220,25 @@ def fetch_url(url, timeout=20):
         return None
 
 
-# ============================================================
-# GOOGLE NEWS RSS
-# ============================================================
+def is_quality_news(article):
+    title = article.get("title", "").lower()
+    source = article.get("source", "").lower()
+
+    text = f"{title} {source}"
+
+    for blocked in BLOCKED_SOURCES:
+        if blocked in source:
+            return False
+
+    for word in BLOCKED_WORDS:
+        if word in text:
+            return False
+
+    return any(
+        word in text
+        for word in NEWS_KEYWORDS
+    )
+
 
 def get_google_news(query):
     encoded = urllib.parse.quote(query)
@@ -195,11 +261,24 @@ def get_google_news(query):
 
         results = []
 
-        for item in root.findall("./channel/item")[:15]:
+        for item in root.findall(
+            "./channel/item"
+        )[:15]:
 
-            title = item.findtext("title", "")
-            link = item.findtext("link", "")
-            pub_date = item.findtext("pubDate", "")
+            title = item.findtext(
+                "title",
+                ""
+            )
+
+            link = item.findtext(
+                "link",
+                ""
+            )
+
+            pub_date = item.findtext(
+                "pubDate",
+                ""
+            )
 
             source = item.find("source")
 
@@ -208,13 +287,16 @@ def get_google_news(query):
             if source is not None:
                 source_name = source.text or ""
 
-            results.append({
+            article = {
                 "title": title.strip(),
                 "link": link.strip(),
                 "date": pub_date.strip(),
                 "source": source_name.strip(),
-                "type": "news"
-            })
+                "type": "news",
+            }
+
+            if is_quality_news(article):
+                results.append(article)
 
         return results
 
@@ -223,12 +305,7 @@ def get_google_news(query):
         return []
 
 
-# ============================================================
-# REDDIT RSS
-# ============================================================
-
 def get_reddit(subreddit):
-
     url = (
         f"https://www.reddit.com/r/"
         f"{subreddit}/new/.rss"
@@ -248,12 +325,10 @@ def get_reddit(subreddit):
 
         results = []
 
-        entries = root.findall(
+        for entry in root.findall(
             "atom:entry",
             namespace
-        )[:15]
-
-        for entry in entries:
+        )[:15]:
 
             title = entry.findtext(
                 "atom:title",
@@ -284,8 +359,9 @@ def get_reddit(subreddit):
                 "title": title.strip(),
                 "link": link.strip(),
                 "date": updated.strip(),
-                "source": f"Reddit / r/{subreddit}",
-                "type": "reddit"
+                "source":
+                    f"Reddit / r/{subreddit}",
+                "type": "reddit",
             })
 
         return results
@@ -295,147 +371,105 @@ def get_reddit(subreddit):
             f"Reddit RSS error ({subreddit}):",
             e
         )
-
         return []
 
 
-# ============================================================
-# COIN DETECTION
-# ============================================================
-
-def article_matches_coin(symbol, query, article):
-    text = (
-        article.get("title", "")
-        + " "
-        + article.get("source", "")
+def article_matches_coin(
+    symbol,
+    query,
+    article
+):
+    title = article.get(
+        "title",
+        ""
     ).lower()
+
+    source = article.get(
+        "source",
+        ""
+    ).lower()
+
+    text = f"{title} {source}"
+
+    for word in BLOCKED_WORDS:
+        if word in text:
+            return False
+
+    for blocked in BLOCKED_SOURCES:
+        if blocked in source:
+            return False
+
+    if not any(
+        word in text
+        for word in NEWS_KEYWORDS
+    ):
+        return False
 
     symbol_lower = symbol.lower()
 
-    # نام کامل پروژه
-    words = query.lower().split()
-
-    # BTC و ETH
     if symbol == "BTC":
-        if (
+        return (
             "bitcoin" in text
-            or "btc" in text
-        ):
-            return True
+            or bool(
+                re.search(
+                    r"\bbtc\b",
+                    text
+                )
+            )
+        )
 
     if symbol == "ETH":
-        if (
+        return (
             "ethereum" in text
-            or re.search(r"\beth\b", text)
-        ):
-            return True
+            or bool(
+                re.search(
+                    r"\beth\b",
+                    text
+                )
+            )
+        )
 
-    # نماد
     if re.search(
         rf"\b{re.escape(symbol_lower)}\b",
         text
     ):
         return True
 
-    # نام پروژه
-    important_words = [
-        w for w in words
-        if len(w) >= 4
-        and w not in {
+    words = query.lower().split()
+
+    project_words = [
+        word
+        for word in words
+        if len(word) >= 4
+        and word not in {
             "crypto",
             "token",
             "network",
-            "blockchain"
+            "blockchain",
         }
     ]
 
-    for word in important_words:
+    for word in project_words:
         if word in text:
             return True
 
     return False
 
 
-# ============================================================
-# SENTIMENT
-# ============================================================
-
-POSITIVE_WORDS = [
-    "approve",
-    "approved",
-    "approval",
-    "bullish",
-    "surge",
-    "rally",
-    "partnership",
-    "launch",
-    "launched",
-    "upgrade",
-    "growth",
-    "adoption",
-    "record",
-    "increase",
-    "gain",
-    "gains",
-    "positive",
-    "breakout",
-    "integrated",
-    "integration",
-    "listing",
-    "support",
-    "success",
-    "milestone",
-    "funding",
-    "investment",
-    "expands",
-    "expansion",
-]
-
-
-NEGATIVE_WORDS = [
-    "hack",
-    "hacked",
-    "exploit",
-    "exploited",
-    "scam",
-    "fraud",
-    "lawsuit",
-    "ban",
-    "banned",
-    "collapse",
-    "crash",
-    "drop",
-    "drops",
-    "decline",
-    "declines",
-    "loss",
-    "losses",
-    "negative",
-    "attack",
-    "stolen",
-    "shutdown",
-    "delist",
-    "delisted",
-    "warning",
-    "investigation",
-    "investigated",
-]
-
-
 def analyze_sentiment(title):
-
     text = normalize_text(title)
 
-    positive = 0
-    negative = 0
+    positive = sum(
+        1
+        for word in POSITIVE_WORDS
+        if word in text
+    )
 
-    for word in POSITIVE_WORDS:
-        if word in text:
-            positive += 1
-
-    for word in NEGATIVE_WORDS:
-        if word in text:
-            negative += 1
+    negative = sum(
+        1
+        for word in NEGATIVE_WORDS
+        if word in text
+    )
 
     if negative > positive:
         return "🔴 منفی"
@@ -446,42 +480,11 @@ def analyze_sentiment(title):
     return "🟡 خنثی"
 
 
-# ============================================================
-# IMPORTANCE SCORE
-# ============================================================
-
-IMPORTANT_WORDS = {
-    "hack": 5,
-    "hacked": 5,
-    "exploit": 5,
-    "exploit": 5,
-    "approval": 4,
-    "approved": 4,
-    "lawsuit": 4,
-    "ban": 5,
-    "banned": 5,
-    "listing": 3,
-    "delisting": 5,
-    "delisted": 5,
-    "partnership": 3,
-    "upgrade": 3,
-    "launch": 3,
-    "mainnet": 4,
-    "etf": 5,
-    "funding": 3,
-    "investment": 3,
-    "acquisition": 4,
-    "security": 4,
-    "attack": 5,
-    "stolen": 5,
-    "shutdown": 5,
-    "collapse": 5,
-    "record": 3,
-}
-
-
-def importance_score(title, source, news_type):
-
+def importance_score(
+    title,
+    source,
+    news_type
+):
     text = normalize_text(
         title + " " + source
     )
@@ -489,45 +492,33 @@ def importance_score(title, source, news_type):
     score = 3
 
     for word, value in IMPORTANT_WORDS.items():
-
         if word in text:
             score += value
 
-    # منابع اجتماعی کمی اهمیت پایین‌تری دارند
-    # مگر اینکه خبر واقعاً مهم باشد
     if news_type == "reddit":
         score -= 1
 
-    # سقف 10
-    score = min(score, 10)
+    return max(
+        1,
+        min(score, 10)
+    )
 
-    # کف 1
-    score = max(score, 1)
-
-    return score
-
-
-# ============================================================
-# TRANSLATION
-# ============================================================
 
 def translate_to_persian(text):
-
     try:
-
         encoded = urllib.parse.quote(text)
 
         url = (
             "https://translate.googleapis.com/"
             "translate_a/single"
-            "?client=gtx"
-            "&sl=auto"
-            "&tl=fa"
-            "&dt=t"
-            f"&q={encoded}"
+            "?client=gtx&sl=auto&tl=fa&dt=t&q="
+            + encoded
         )
 
-        data = fetch_url(url, timeout=15)
+        data = fetch_url(
+            url,
+            timeout=15
+        )
 
         if not data:
             return text
@@ -536,31 +527,26 @@ def translate_to_persian(text):
             data.decode("utf-8")
         )
 
-        translated = ""
+        translated = "".join(
+            part[0]
+            for part in result[0]
+            if part[0]
+        )
 
-        for part in result[0]:
-
-            if part[0]:
-                translated += part[0]
-
-        if translated:
-            return translated
+        return translated or text
 
     except Exception as e:
         print(
             "Translation error:",
             e
         )
+        return text
 
-    return text
 
-
-# ============================================================
-# DUPLICATE DETECTION
-# ============================================================
-
-def is_duplicate(article, recent_articles):
-
+def is_duplicate(
+    article,
+    recent_articles
+):
     title = article.get(
         "title",
         ""
@@ -571,31 +557,30 @@ def is_duplicate(article, recent_articles):
         ""
     )
 
-    # لینک دقیق
     for old in recent_articles:
 
-        if link and link == old.get(
-            "link",
-            ""
+        if (
+            link
+            and link == old.get(
+                "link",
+                ""
+            )
         ):
             return True
 
-        # عنوان خیلی شبیه
         if similarity(
             title,
-            old.get("title", "")
+            old.get(
+                "title",
+                ""
+            )
         ) >= 0.88:
             return True
 
     return False
 
 
-# ============================================================
-# TELEGRAM
-# ============================================================
-
 def send_telegram(message):
-
     url = (
         f"https://api.telegram.org/"
         f"bot{BOT_TOKEN}/sendMessage"
@@ -604,7 +589,7 @@ def send_telegram(message):
     data = urllib.parse.urlencode({
         "chat_id": CHAT_ID,
         "text": message,
-        "disable_web_page_preview": "false"
+        "disable_web_page_preview": "false",
     }).encode("utf-8")
 
     request = urllib.request.Request(
@@ -613,7 +598,7 @@ def send_telegram(message):
         headers={
             "Content-Type":
                 "application/x-www-form-urlencoded"
-        }
+        },
     )
 
     try:
@@ -637,15 +622,10 @@ def send_telegram(message):
         return None
 
 
-# ============================================================
-# MESSAGE
-# ============================================================
-
 def build_message(
     symbol,
     article
 ):
-
     original_title = html.unescape(
         article["title"]
     ).strip()
@@ -666,7 +646,10 @@ def build_message(
     score = importance_score(
         original_title,
         source,
-        article.get("type", "news")
+        article.get(
+            "type",
+            "news"
+        )
     )
 
     if score >= 9:
@@ -681,32 +664,18 @@ def build_message(
     else:
         level = "⚪ کم‌اهمیت"
 
-    message = (
+    return (
         f"📰 {symbol} | {level}\n\n"
-
         f"🔹 {persian_title}\n\n"
-
         f"📊 اهمیت: {score}/10\n"
         f"📈 تأثیر احتمالی: {sentiment}\n\n"
-
         f"🗞 منبع: {source}\n"
         f"🔗 {article['link']}"
     )
 
-    return message
-
-
-# ============================================================
-# COLLECT ALL NEWS
-# ============================================================
 
 def collect_news():
-
     all_articles = []
-
-    # --------------------------------
-    # Google News
-    # --------------------------------
 
     for symbol, query in COINS.items():
 
@@ -732,10 +701,6 @@ def collect_news():
                     article
                 )
 
-    # --------------------------------
-    # Reddit
-    # --------------------------------
-
     for subreddit in REDDIT_SUBREDDITS:
 
         print(
@@ -748,12 +713,11 @@ def collect_news():
 
         for article in articles:
 
-            title = article.get(
-                "title",
-                ""
-            )
+            if not is_quality_news(
+                article
+            ):
+                continue
 
-            # پیدا کردن ارز مرتبط
             for symbol, query in COINS.items():
 
                 if article_matches_coin(
@@ -779,10 +743,6 @@ def collect_news():
     return all_articles
 
 
-# ============================================================
-# FIRST RUN
-# ============================================================
-
 def initialize_bot():
 
     seen = load_seen()
@@ -807,9 +767,15 @@ def initialize_bot():
         unique_text = (
             symbol
             + "|"
-            + article.get("title", "")
+            + article.get(
+                "title",
+                ""
+            )
             + "|"
-            + article.get("link", "")
+            + article.get(
+                "link",
+                ""
+            )
         )
 
         seen.add(
@@ -833,23 +799,18 @@ def initialize_bot():
     )
 
     print(
-        f"Registered {len(articles)} old articles."
+        f"Registered "
+        f"{len(articles)} old articles."
     )
 
-
-# ============================================================
-# MAIN
-# ============================================================
 
 def main():
 
     seen = load_seen()
 
-    first_run = not os.path.exists(
+    if not os.path.exists(
         START_FILE
-    )
-
-    if first_run:
+    ):
 
         initialize_bot()
 
@@ -862,35 +823,27 @@ def main():
     articles = collect_news()
 
     print(
-        f"Collected {len(articles)} articles."
+        f"Collected "
+        f"{len(articles)} articles."
     )
-
-    # --------------------------------
-    # حذف اخبار تکراری در همین اجرا
-    # --------------------------------
 
     unique_articles = []
 
     for article in articles:
 
-        if is_duplicate(
+        if not is_duplicate(
             article,
             unique_articles
         ):
-            continue
 
-        unique_articles.append(
-            article
-        )
+            unique_articles.append(
+                article
+            )
 
     print(
         f"After duplicate filter: "
         f"{len(unique_articles)}"
     )
-
-    # --------------------------------
-    # ارسال
-    # --------------------------------
 
     new_count = 0
 
@@ -904,9 +857,15 @@ def main():
         unique_text = (
             symbol
             + "|"
-            + article.get("title", "")
+            + article.get(
+                "title",
+                ""
+            )
             + "|"
-            + article.get("link", "")
+            + article.get(
+                "link",
+                ""
+            )
         )
 
         news_id = make_id(
@@ -933,15 +892,13 @@ def main():
             )
         )
 
-        # --------------------------------
-        # خبرهای خیلی ضعیف را نفرست
-        # --------------------------------
-
         if score <= 2:
+
             print(
                 f"Skipped low importance: "
                 f"{symbol}"
             )
+
             continue
 
         message = build_message(
@@ -967,14 +924,10 @@ def main():
     save_seen(seen)
 
     print(
-        f"Finished. "
-        f"Sent {new_count} new articles."
+        f"Finished. Sent "
+        f"{new_count} new articles."
     )
 
-
-# ============================================================
-# RUN
-# ============================================================
 
 if __name__ == "__main__":
     main()
